@@ -1,0 +1,6 @@
+A PDF timeline generator.
+
+Ruby script generating a LaTeX/TikZ file and invoking pdflatex, ps2pdf,
+poster and pdf2ps appropriately.
+
+More informations soon.
