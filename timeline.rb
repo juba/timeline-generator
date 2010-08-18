@@ -72,6 +72,15 @@ PDF_VIEWER = "evince"
 MONTHS = %w{Janvier Février Mars Avril Mai Juin Juillet Août Septembre Octobre Novembre Décembre}
 DAYS_PER_MONTH = [31,28,31,30,31,30,31,31,30,31,30,31]
 
+## Extra LaTeX packages
+EXTRA_LATEX_PACKAGES = <<'EOT'
+\usepackage[francais]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[autolanguage,np]{numprint}
+EOT
+
 ### CONFIGURATION ENDS HERE
 
 OUTPUT_FILENAME = "output"
@@ -91,21 +100,21 @@ HEIGHT = TOTAL_HEIGHT - V_MARGIN * 2 - 1
 f = File.new(OUTPUT_FILENAME + ".tex", "w")
 
 def entete
-  return <<'EOT'
-\documentclass{article}
+  entete = <<'EOT'
+\documentclass[oneside,a4paper]{article}
 \usepackage{tikz}
 \usepackage{geometry}
-\usepackage[francais]{babel}
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{lmodern}
-\usepackage[autolanguage,np]{numprint}
+EOT
 
+  entete += EXTRA_LATEX_PACKAGES
+
+  entete += <<'EOT'
 \usetikzlibrary{calendar}
 
 \pagestyle{empty}
 \thispagestyle{empty}
 EOT
+  return entete
 end
 
 def geometry
