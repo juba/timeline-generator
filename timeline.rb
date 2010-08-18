@@ -9,13 +9,21 @@
 TITLE = "Histoire récente"
 
 ## Number of a4 sheets
-NB_SHEETS = 3
+NB_SHEETS = 15
 ## Paper orientation, either "portrait" or "landscape"
 SHEET_ORIENTATION = "landscape"
-## Horizontal margins in cm
-H_MARGIN = 2
+## Left margin in cm
+L_MARGIN = 0.5
+## Right margin in cm
+R_MARGIN = 2
 ## Vertical margins in cm
 V_MARGIN = 0.5
+
+## Cut margins in cm
+CUT_MARGINS = 0.5
+## Overlapping between pages in cm
+OVERLAPPING = 0.2
+
 
 ## First and last date in the timeline
 TIMELINE_DATE_START = 0
@@ -32,14 +40,22 @@ TIMELINE_DATE_LINES = 5
 ## Area height (in cm) and font size for timeline dates
 TIMELINE_DATE_HEIGHT = 1.1
 TIMELINE_DATE_SIZE = '\huge'
-## Area height (in cm) and font size for month names
+
+## Area height (in cm) for months names - 0 to disable months and days
 MONTH_HEIGHT = 0.7
+## font size for month names
 MONTH_SIZE = '\large'
 ## Area height (in cm) and font size for day numbers
-DAY_HEIGHT = 0.5
-DAY_SIZE = '\footnotesize'
-## Area height (in cm) and font sizes for hours and minutes
+if MONTH_HEIGHT > 0 then
+  DAY_HEIGHT = 0.5
+else
+  DAY_HEIGHT = 0
+end
+DAY_SIZE = '\scriptsize'
+
+## Area height (in cm) for hours and minutes - 0 to disable
 TIME_HEIGHT = 0.7
+## font sizes for hours and minutes
 HOUR_SIZE = '\normalsize'
 MINUTE_SIZE = '\footnotesize'
 ## Minutes numbers to display
@@ -51,8 +67,6 @@ MINUTES_TICKS_INTERVAL = 1
 PDFLATEX = "pdflatex"
 ## Pdf viexer command
 PDF_VIEWER = "evince"
-## Pdfposter command
-POSTER = "poster"
 
 ## Months names
 MONTHS = %w{Janvier Février Mars Avril Mai Juin Juillet Août Septembre Octobre Novembre Décembre}
@@ -60,7 +74,7 @@ DAYS_PER_MONTH = [31,28,31,30,31,30,31,31,30,31,30,31]
 
 ### CONFIGURATION ENDS HERE
 
-
+OUTPUT_FILENAME = "chrono"
 
 
 sum = 0
@@ -69,12 +83,12 @@ cumdays = DAYS_PER_MONTH.map{ |x| sum += x }
 sheet_width =  SHEET_ORIENTATION == "portrait" ? 21 : 29.7
 sheet_height =  SHEET_ORIENTATION == "portrait" ? 29.7 : 21
 
-TOTAL_WIDTH = NB_SHEETS * sheet_width
+TOTAL_WIDTH = NB_SHEETS * sheet_width - CUT_MARGINS * 2 * NB_SHEETS - OVERLAPPING * 2 * (NB_SHEETS - 1) 
 TOTAL_HEIGHT = sheet_height
-WIDTH = TOTAL_WIDTH - H_MARGIN * 2
+WIDTH = TOTAL_WIDTH - L_MARGIN - R_MARGIN
 HEIGHT = TOTAL_HEIGHT - V_MARGIN * 2 - 1
 
-f = File.new("chrono.tex", "w")
+f = File.new(OUTPUT_FILENAME + ".tex", "w")
 
 def entete
   return <<'EOT'
@@ -95,7 +109,7 @@ EOT
 end
 
 def geometry
-  "\\geometry{paperwidth=#{TOTAL_WIDTH}cm, paperheight=#{TOTAL_HEIGHT}cm, top=#{V_MARGIN}cm, bottom=#{V_MARGIN}cm, left=#{H_MARGIN}cm, right=#{H_MARGIN}cm}"
+  "\\geometry{paperwidth=#{TOTAL_WIDTH}cm, paperheight=#{TOTAL_HEIGHT}cm, top=#{V_MARGIN}cm, bottom=#{V_MARGIN}cm, left=#{L_MARGIN}cm, right=#{R_MARGIN}cm}"
 end
 
 
@@ -153,6 +167,7 @@ n = dates.length
 top = HEIGHT - TIMELINE_DATE_HEIGHT
 bottom = MONTH_HEIGHT + DAY_HEIGHT + TIME_HEIGHT
 f.puts "\\draw(0cm, #{top}cm) -- (#{WIDTH}cm, #{top}cm) ;"
+f.puts "\\draw (0,0) -- (#{WIDTH}cm,0);"
 ecart = (top.to_f - bottom.to_f) / TIMELINE_DATE_LINES.to_f
 nb = 1..(TIMELINE_DATE_LINES - 1)
 nb.each do |i|
@@ -197,84 +212,93 @@ dates.each_with_index do |d,i|
 end
 
 
-### TIME AND MONTHS
-
-## LINES
-f.puts "\\draw (0,0) -- (#{WIDTH}cm,0);"
-## Months
-h = MONTH_HEIGHT
-f.puts "\\draw (0,#{h}cm) -- (#{WIDTH}cm,#{h}cm);"
-## Days
-h = MONTH_HEIGHT + DAY_HEIGHT
-f.puts "\\draw (0,#{h}cm) -- (#{WIDTH}cm,#{h}cm);"
-(0..365).each do |n| 
-  h = coord_day(n)
-  f.puts "\\draw (#{h}cm,#{MONTH_HEIGHT}cm) -- (#{h}cm,#{MONTH_HEIGHT + DAY_HEIGHT}cm);"
-end
-## Hours
-h = MONTH_HEIGHT + DAY_HEIGHT + TIME_HEIGHT
-f.puts "\\draw (0,#{h}cm) -- (#{WIDTH}cm,#{h}cm);"
 
 
-## Months names
-f.puts MONTH_SIZE
-f.puts "\\draw (0, 0) -- (0, #{MONTH_HEIGHT}cm);"
-MONTHS.each_with_index do |n, i|
-  left =  i == 0 ? 0 : coord_day(cumdays[i-1])
-  right = coord_day(cumdays[i])
-  mid = (left.to_f + right.to_f) / 2
-  f.puts "\\draw (#{right}cm, 0) -- (#{right}cm, #{MONTH_HEIGHT}cm);"
-  h = MONTH_HEIGHT.to_f / 2
-  f.puts "\\draw (#{mid}cm, #{h}cm) node{#{n}};"
-end
+### MONTHS AND DAYS
 
+if MONTH_HEIGHT > 0
 
-## Days names
-f.puts DAY_SIZE
-MONTHS.each_with_index do |n, i|
-  days = DAYS_PER_MONTH[i]
-  cum = i == 0 ? 0 : cumdays[i-1]
-  (1..days).each do |d|
-    l = coord_day(cum.to_f + d.to_f - 0.5)
-    h = MONTH_HEIGHT.to_f + DAY_HEIGHT.to_f / 2
-    f.puts "\\draw(#{l}cm, #{h}cm) node{#{d.to_s}};"
+  ## Lines
+  # Months
+  h = MONTH_HEIGHT
+  f.puts "\\draw (0,#{h}cm) -- (#{WIDTH}cm,#{h}cm);"
+  # Days
+  h = MONTH_HEIGHT + DAY_HEIGHT
+  f.puts "\\draw (0,#{h}cm) -- (#{WIDTH}cm,#{h}cm);"
+  (0..365).each do |n| 
+    h = coord_day(n)
+    f.puts "\\draw (#{h}cm,#{MONTH_HEIGHT}cm) -- (#{h}cm,#{MONTH_HEIGHT + DAY_HEIGHT}cm);"
   end
-end
 
-## Hours and minutes
-(0..24).each do |t|
-  l = coord_time(t)
-  h_line = MONTH_HEIGHT.to_f + DAY_HEIGHT.to_f + TIME_HEIGHT.to_f
-  h_text = MONTH_HEIGHT.to_f + DAY_HEIGHT.to_f + TIME_HEIGHT.to_f / 2 * 0.8
-  h_tick = h_line.to_f * 0.9;
-  f.puts HOUR_SIZE
-  f.puts "\\draw(#{l}cm, #{h_line}cm) -- (#{l}cm, #{h_tick}cm);"
-  f.puts "\\draw(#{l}cm, #{h_text}cm) node{\\textbf{#{t.to_s}h}};"
-  next if t == 24
-  ## Minutes names
-  f.puts MINUTE_SIZE
-  MINUTES.each_with_index do |m|
-    l = coord_time(t.to_f + (m.to_f / 60))
-    h_line = MONTH_HEIGHT.to_f + DAY_HEIGHT.to_f + TIME_HEIGHT.to_f
-    h_text = MONTH_HEIGHT.to_f + DAY_HEIGHT.to_f + TIME_HEIGHT.to_f / 2 * 0.9
-    h_tick = h_line.to_f * 0.95;
-    f.puts "\\draw(#{l}cm, #{h_line}cm) -- (#{l}cm, #{h_tick}cm);"
-#    f.puts "\\draw(#{l}cm, #{h_text}cm) node{#{t.to_s}h#{m.to_s}};"
-    f.puts "\\draw(#{l}cm, #{h_text}cm) node{#{m.to_s}};"
+
+  ## Months names
+  f.puts MONTH_SIZE
+  f.puts "\\draw (0, 0) -- (0, #{MONTH_HEIGHT}cm);"
+  MONTHS.each_with_index do |n, i|
+    left =  i == 0 ? 0 : coord_day(cumdays[i-1])
+    right = coord_day(cumdays[i])
+    mid = (left.to_f + right.to_f) / 2
+    f.puts "\\draw (#{right}cm, 0) -- (#{right}cm, #{MONTH_HEIGHT}cm);"
+    h = MONTH_HEIGHT.to_f / 2
+    f.puts "\\draw (#{mid}cm, #{h}cm) node{#{n}};"
   end
-  ## Minutes ticks
-  minutes = MINUTES_TICKS_INTERVAL
-  while (minutes < 60) do
-    if !(MINUTES.include?(minutes)) then
-      l = coord_time(t.to_f + (minutes.to_f / 60))
-      h_line = MONTH_HEIGHT.to_f + DAY_HEIGHT.to_f + TIME_HEIGHT.to_f
-      h_tick = h_line.to_f * 0.975;
-      f.puts "\\draw(#{l}cm, #{h_line}cm) -- (#{l}cm, #{h_tick}cm);"
+
+
+  ## Days names
+  f.puts DAY_SIZE
+  MONTHS.each_with_index do |n, i|
+    days = DAYS_PER_MONTH[i]
+    cum = i == 0 ? 0 : cumdays[i-1]
+    (1..days).each do |d|
+      l = coord_day(cum.to_f + d.to_f - 0.5)
+      h = MONTH_HEIGHT.to_f + DAY_HEIGHT.to_f / 2
+      f.puts "\\draw(#{l}cm, #{h}cm) node{#{d.to_s}};"
     end
-    minutes += MINUTES_TICKS_INTERVAL
-   end
+  end
+
 end
 
+if TIME_HEIGHT > 0 then
+
+  ## Lines
+  h = MONTH_HEIGHT + DAY_HEIGHT + TIME_HEIGHT
+  f.puts "\\draw (0,#{h}cm) -- (#{WIDTH}cm,#{h}cm);"
+
+  ## Hours and minutes
+  (0..24).each do |t|
+    l = coord_time(t)
+    h_line = MONTH_HEIGHT.to_f + DAY_HEIGHT.to_f + TIME_HEIGHT.to_f
+    h_text = MONTH_HEIGHT.to_f + DAY_HEIGHT.to_f + TIME_HEIGHT.to_f / 2 * 0.8
+    h_tick = h_line.to_f * 0.9;
+    f.puts HOUR_SIZE
+    f.puts "\\draw(#{l}cm, #{h_line}cm) -- (#{l}cm, #{h_tick}cm);"
+    f.puts "\\draw(#{l}cm, #{h_text}cm) node{\\textbf{#{t.to_s}h}};"
+    next if t == 24
+    ## Minutes names
+    f.puts MINUTE_SIZE
+    MINUTES.each_with_index do |m|
+      l = coord_time(t.to_f + (m.to_f / 60))
+      h_line = MONTH_HEIGHT.to_f + DAY_HEIGHT.to_f + TIME_HEIGHT.to_f
+      h_text = MONTH_HEIGHT.to_f + DAY_HEIGHT.to_f + TIME_HEIGHT.to_f / 2 * 0.9
+      h_tick = h_line.to_f * 0.95;
+      f.puts "\\draw(#{l}cm, #{h_line}cm) -- (#{l}cm, #{h_tick}cm);"
+      #    f.puts "\\draw(#{l}cm, #{h_text}cm) node{#{t.to_s}h#{m.to_s}};"
+      f.puts "\\draw(#{l}cm, #{h_text}cm) node{#{m.to_s}};"
+    end
+    ## Minutes ticks
+    minutes = MINUTES_TICKS_INTERVAL
+    while (minutes < 60) do
+      if !(MINUTES.include?(minutes)) then
+        l = coord_time(t.to_f + (minutes.to_f / 60))
+        h_line = MONTH_HEIGHT.to_f + DAY_HEIGHT.to_f + TIME_HEIGHT.to_f
+        h_tick = h_line.to_f * 0.975;
+        f.puts "\\draw(#{l}cm, #{h_line}cm) -- (#{l}cm, #{h_tick}cm);"
+      end
+      minutes += MINUTES_TICKS_INTERVAL
+    end
+  end
+
+end
 
 f.puts '\end{tikzpicture}'
 
@@ -282,13 +306,57 @@ f.puts pied
  
 f.close
 
-system(PDFLATEX + ' chrono.tex')
-#exec(PDF_VIEWER + ' chrono.pdf') unless $? != 0
+system(PDFLATEX + ' ' + OUTPUT_FILENAME + '.tex')
 
-system("pdf2ps chrono.pdf")
-box = SHEET_ORIENTATION == "portrait" ? "#{NB_SHEETS}x1A4" : "1x#{NB_SHEETS}A4"
-cut = SHEET_ORIENTATION == "portrait" ? "10x0.1mm" : "0.1x10mm"
-system(POSTER + " -m200x287mm -p#{box} -c#{cut} chrono.ps > chrono_pages.ps")
-system("ps2pdf chrono_pages.ps")
+if NB_SHEETS < 2
+  exec(PDF_VIEWER + ' ' + OUTPUT_FILENAME + '.pdf') unless $? != 0
+end
 
-exec(PDF_VIEWER + ' chrono_pages.pdf') unless $? != 0
+puts "="*60
+
+f = File.new(OUTPUT_FILENAME + "_pages.tex", "w")
+
+if SHEET_ORIENTATION == "portrait" then
+  orientation = ""
+  paperwidth = 21 - 2 * CUT_MARGINS
+  paperheight = 29.7
+else
+  orientation = "landscape,"
+  paperwidth = 29.7 - 2 * CUT_MARGINS
+  paperheight = 21
+end
+
+
+f.puts <<"EOT"
+\\documentclass[#{orientation}oneside,a4paper]{article}
+\\usepackage{pdfpages}
+\\usepackage{geometry}
+\\usepackage[center,cross,a4,pdflatex]{crop}
+\\geometry{paperwidth=#{paperwidth}cm,paperheight=#{paperheight}cm,left=0cm,top=0cm,bottom=0cm,right=0cm,nohead}
+\\begin{document}
+\\pagestyle{empty}
+\\thispagestyle{empty}
+EOT
+
+xoffset = 0
+(1..NB_SHEETS).each do |n|
+  f.puts "\\includepdf[viewport= #{xoffset}cm 0cm #{xoffset + paperwidth}cm #{paperheight}cm, offset=0 0, delta=0 0, noautoscale=true, clip=true]{chrono.pdf}"
+  xoffset += paperwidth - 2 * OVERLAPPING
+#"\\includepdf[viewport= 198cm 0cm 398cm 297cm, offset=0 0, delta=0 0, noautoscale=true, clip=true]{chrono.pdf}"
+#"\\includepdf[viewport= 396cm 0cm 596cm 297cm, offset=0 0, delta=0 0, noautoscale=true, clip=true]{chrono.pdf}"
+end
+
+f.puts '\\end{document}'
+
+
+f.close
+
+system(PDFLATEX + ' ' + OUTPUT_FILENAME + '_pages.tex')
+
+# system("pdf2ps chrono.pdf")
+# box = SHEET_ORIENTATION == "portrait" ? "#{NB_SHEETS}x1A4" : "1x#{NB_SHEETS}A4"
+# cut = SHEET_ORIENTATION == "portrait" ? "10x0.1mm" : "0.1x10mm"
+# system(POSTER + " -m200x287mm -p#{box} -c#{cut} chrono.ps > chrono_pages.ps")
+# system("ps2pdf chrono_pages.ps")
+
+exec(PDF_VIEWER + ' ' + OUTPUT_FILENAME + '_pages.pdf') unless $? != 0
