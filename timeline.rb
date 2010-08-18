@@ -9,7 +9,7 @@
 TITLE = "Histoire récente"
 
 ## Number of a4 sheets
-NB_SHEETS = 15
+NB_SHEETS = 5
 ## Paper orientation, either "portrait" or "landscape"
 SHEET_ORIENTATION = "landscape"
 ## Left margin in cm
@@ -74,7 +74,7 @@ DAYS_PER_MONTH = [31,28,31,30,31,30,31,31,30,31,30,31]
 
 ### CONFIGURATION ENDS HERE
 
-OUTPUT_FILENAME = "chrono"
+OUTPUT_FILENAME = "output"
 
 
 sum = 0
@@ -340,23 +340,14 @@ EOT
 
 xoffset = 0
 (1..NB_SHEETS).each do |n|
-  f.puts "\\includepdf[viewport= #{xoffset}cm 0cm #{xoffset + paperwidth}cm #{paperheight}cm, offset=0 0, delta=0 0, noautoscale=true, clip=true]{chrono.pdf}"
+  f.puts "\\includepdf[viewport= #{xoffset}cm 0cm #{xoffset + paperwidth}cm #{paperheight}cm, offset=0 0, delta=0 0, noautoscale=true, clip=true]{#{OUTPUT_FILENAME}.pdf}"
   xoffset += paperwidth - 2 * OVERLAPPING
-#"\\includepdf[viewport= 198cm 0cm 398cm 297cm, offset=0 0, delta=0 0, noautoscale=true, clip=true]{chrono.pdf}"
-#"\\includepdf[viewport= 396cm 0cm 596cm 297cm, offset=0 0, delta=0 0, noautoscale=true, clip=true]{chrono.pdf}"
 end
 
 f.puts '\\end{document}'
 
-
 f.close
 
 system(PDFLATEX + ' ' + OUTPUT_FILENAME + '_pages.tex')
-
-# system("pdf2ps chrono.pdf")
-# box = SHEET_ORIENTATION == "portrait" ? "#{NB_SHEETS}x1A4" : "1x#{NB_SHEETS}A4"
-# cut = SHEET_ORIENTATION == "portrait" ? "10x0.1mm" : "0.1x10mm"
-# system(POSTER + " -m200x287mm -p#{box} -c#{cut} chrono.ps > chrono_pages.ps")
-# system("ps2pdf chrono_pages.ps")
 
 exec(PDF_VIEWER + ' ' + OUTPUT_FILENAME + '_pages.pdf') unless $? != 0
