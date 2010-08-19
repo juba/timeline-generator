@@ -8,6 +8,10 @@
 ## Main title
 TITLE = "Histoire récente"
 
+## Language ("francais" or "english")
+#LANGUAGE = "francais"
+LANGUAGE = "english"
+
 ## Number of a4 sheets
 NB_SHEETS = 5
 ## Paper orientation, either "portrait" or "landscape"
@@ -69,16 +73,22 @@ PDFLATEX = "pdflatex"
 PDF_VIEWER = "evince"
 
 ## Months names
-MONTHS = %w{Janvier Février Mars Avril Mai Juin Juillet Août Septembre Octobre Novembre Décembre}
+MONTHS_NAMES = case LANGUAGE
+               when "francais"
+                 %w{Janvier Février Mars Avril Mai Juin Juillet Août Septembre Octobre Novembre Décembre}
+                ## English by default
+               else
+                 %w{January February March April May June July August September October November December}
+               end
+
 DAYS_PER_MONTH = [31,28,31,30,31,30,31,31,30,31,30,31]
 
 ## Extra LaTeX packages
-EXTRA_LATEX_PACKAGES = <<'EOT'
-\usepackage[francais]{babel}
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{lmodern}
-\usepackage[autolanguage,np]{numprint}
+EXTRA_LATEX_PACKAGES = <<"EOT"
+\\usepackage[utf8]{inputenc}
+\\usepackage[T1]{fontenc}
+\\usepackage{lmodern}
+\\usepackage[autolanguage,np]{numprint}
 EOT
 
 ### CONFIGURATION ENDS HERE
@@ -97,40 +107,6 @@ TOTAL_HEIGHT = sheet_height
 WIDTH = TOTAL_WIDTH - L_MARGIN - R_MARGIN
 HEIGHT = TOTAL_HEIGHT - V_MARGIN * 2 - 1
 
-f = File.new(OUTPUT_FILENAME + ".tex", "w")
-
-def entete
-  entete = <<'EOT'
-\documentclass[oneside,a4paper]{article}
-\usepackage{tikz}
-\usepackage{geometry}
-EOT
-
-  entete += EXTRA_LATEX_PACKAGES
-
-  entete += <<'EOT'
-\usetikzlibrary{calendar}
-
-\pagestyle{empty}
-\thispagestyle{empty}
-EOT
-  return entete
-end
-
-def geometry
-  "\\geometry{paperwidth=#{TOTAL_WIDTH}cm, paperheight=#{TOTAL_HEIGHT}cm, top=#{V_MARGIN}cm, bottom=#{V_MARGIN}cm, left=#{L_MARGIN}cm, right=#{R_MARGIN}cm}"
-end
-
-
-def titre
-  '\begin{center}\Huge\textbf{' + TITLE + '}\end{center}'
-end 
-
-def pied
-  return <<'EOF'
-\end{document}
-EOF
-end
 
 ## x coordinate for a day (integer between 1 and 365)
 def coord_day(i)
@@ -148,20 +124,30 @@ def coord_date(i)
 end
 
 
-f.puts entete
+f = File.new(OUTPUT_FILENAME + ".tex", "w")
+
+
+f.puts <<"EOT"
+\\documentclass[oneside,a4paper]{article}
+\\usepackage[#{LANGUAGE}]{babel}
+\\usepackage{tikz}
+\\usepackage{geometry}
+EOT
+
+f.puts EXTRA_LATEX_PACKAGES
+geometry = "\\geometry{paperwidth=#{TOTAL_WIDTH}cm, paperheight=#{TOTAL_HEIGHT}cm, top=#{V_MARGIN}cm, bottom=#{V_MARGIN}cm, left=#{L_MARGIN}cm, right=#{R_MARGIN}cm}"
 f.puts geometry
-f.puts '\begin{document}'
-f.puts '\sffamily'
-
-
-f.puts titre
-
+f.puts <<'EOT'
+\begin{document}
+\pagestyle{empty}
+\thispagestyle{empty}
+\sffamily
+EOT
+f.puts "\\begin{center}\\Huge\\textbf #{TITLE}\\end{center}"
 
 ### TIMELINE DATES
 
-f.puts <<'EOF' 
-\begin{tikzpicture}[scale=1]
-EOF
+f.puts '\begin{tikzpicture}[scale=1]'
 
 ## Compute dates to display
 tmp = TIMELINE_DATE_START..TIMELINE_DATE_END
@@ -243,7 +229,7 @@ if MONTH_HEIGHT > 0
   ## Months names
   f.puts MONTH_SIZE
   f.puts "\\draw (0, 0) -- (0, #{MONTH_HEIGHT}cm);"
-  MONTHS.each_with_index do |n, i|
+  MONTHS_NAMES.each_with_index do |n, i|
     left =  i == 0 ? 0 : coord_day(cumdays[i-1])
     right = coord_day(cumdays[i])
     mid = (left.to_f + right.to_f) / 2
@@ -255,7 +241,7 @@ if MONTH_HEIGHT > 0
 
   ## Days names
   f.puts DAY_SIZE
-  MONTHS.each_with_index do |n, i|
+  MONTHS_NAMES.each_with_index do |n, i|
     days = DAYS_PER_MONTH[i]
     cum = i == 0 ? 0 : cumdays[i-1]
     (1..days).each do |d|
@@ -310,8 +296,7 @@ if TIME_HEIGHT > 0 then
 end
 
 f.puts '\end{tikzpicture}'
-
-f.puts pied
+f.puts '\end{document}'
  
 f.close
 
