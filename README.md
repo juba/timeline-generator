@@ -13,16 +13,20 @@ You can find two examples of output files in the `examples` directory. It is a 0
 ## REQUIREMENTS
 
 - Ruby
-- PDFLaTeX with the tikz, geometry and pdfpages packages installed
+- PDFLaTeX with the *tikz*, *geometry* and *pdfpages* packages installed
 
-## INSTALLATION
+## INSTALLATION AND USAGE
 
-- Just edit the timeline.rb file after editing it to your needs
+- Download `timeline.rb`
+- Just run it after editing it to your needs with :
+    ruby timeline.rb
 
 ## KNOWN LIMITATIONS
 
 - only works with A4 paper
 - no easy way (graphical or command line) to pass parameters
 - badly documented
+
+## SUPPORT
 
 [![flattr](http://api.flattr.com/button/button-compact-static-100x17.png)](http://flattr.com/thing/51784/PDF-timeline-generator)
