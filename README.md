@@ -1,3 +1,5 @@
+[![flattr](http://api.flattr.com/button/button-compact-static-100x17.png)](http://flattr.com/thing/51784/PDF-timeline-generator)
+
 ## OVERVIEW
 
 A PDF timeline generator.
