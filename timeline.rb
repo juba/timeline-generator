@@ -123,9 +123,7 @@ def coord_date(i)
   (TIMELINE_DATE_START - i).abs.to_f / (TIMELINE_DATE_START.to_i - TIMELINE_DATE_END).abs.to_f * WIDTH
 end
 
-
 f = File.new(OUTPUT_FILENAME + ".tex", "w")
-
 
 f.puts <<"EOT"
 \\documentclass[oneside,a4paper]{article}
@@ -143,7 +141,7 @@ f.puts <<'EOT'
 \thispagestyle{empty}
 \sffamily
 EOT
-f.puts "\\begin{center}\\Huge\\textbf #{TITLE}\\end{center}"
+f.puts "\\begin{center}\\Huge\\textbf{#{TITLE}}\\end{center}"
 
 ### TIMELINE DATES
 
