@@ -1,5 +1,3 @@
-[![flattr](http://api.flattr.com/button/button-compact-static-100x17.png)](http://flattr.com/thing/51784/PDF-timeline-generator)
-
 ## OVERVIEW
 
 A PDF timeline generator.
@@ -27,3 +25,5 @@ You can find two examples of output files in the `examples` directory. It is a 0
 - no easy way (graphical or command line) to pass parameters
 - very badly documented
 - first and last pages also have crop marks on both sides
+
+[![flattr](http://api.flattr.com/button/button-compact-static-100x17.png)](http://flattr.com/thing/51784/PDF-timeline-generator)
