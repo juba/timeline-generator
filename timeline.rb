@@ -339,17 +339,43 @@ end
 f.puts <<"EOT"
 \\documentclass[#{orientation}oneside,a4paper]{article}
 \\usepackage{pdfpages}
+\\usepackage{tikz}
 \\usepackage{geometry}
 \\usepackage[center,cross,a4,pdflatex]{crop}
 \\geometry{paperwidth=#{paperwidth}cm,paperheight=#{paperheight}cm,left=0cm,top=0cm,bottom=0cm,right=0cm,nohead}
+
+
+\\newcommand*\\topline{%
+  \\begin{picture}(0,0)
+    \\thinlines\\unitlength1cm
+    \\put(0,-2){\\line(0,1){4}}
+  \\end{picture}}
+\\newcommand*\\bottomline{%
+  \\begin{picture}(0,0)
+    \\thinlines\\unitlength1cm
+    \\put(0,-2){\\line(0,1){4}}
+  \\end{picture}}
+\\cropdef\\relax\\topline\\relax\\bottomline{first}
+\\cropdef\\topline\\relax\\bottomline\\relax{last}
+\\cropdef\\topline\\topline\\bottomline\\bottomline{lines}
+
 \\begin{document}
+
 \\pagestyle{empty}
 \\thispagestyle{empty}
+\\crop[first]
+
 EOT
 
 xoffset = 0
 (1..NB_SHEETS).each do |n|
+#  f.puts "\\setlength{\\unitlength}{1cm}\\begin{picture}(0,0)\\thinlines\\put(0,-2){\\line(0,1){4}}\\end{picture}"
   f.puts "\\includepdf[viewport= #{xoffset}cm 0cm #{xoffset + paperwidth}cm #{paperheight}cm, offset=0 0, delta=0 0, noautoscale=true, clip=true]{#{OUTPUT_FILENAME}.pdf}"
+  if n == (NB_SHEETS - 1)
+    f.puts '\crop[last]'
+  else
+    f.puts '\crop[lines]'
+  end
   xoffset += paperwidth - 2 * OVERLAPPING
 end
 

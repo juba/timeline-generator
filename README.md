@@ -23,7 +23,6 @@ You can find two examples of output files in the `examples` directory. It is a 0
 
 - only works with A4 paper
 - no easy way (graphical or command line) to pass parameters
-- very badly documented
-- first and last pages also have crop marks on both sides
+- badly documented
 
 [![flattr](http://api.flattr.com/button/button-compact-static-100x17.png)](http://flattr.com/thing/51784/PDF-timeline-generator)
