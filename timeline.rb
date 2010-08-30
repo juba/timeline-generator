@@ -114,8 +114,8 @@ def generate_timeline_area
   bottom = @month_height + @day_height + @time_height
   p << "\\draw(0cm, #{top}cm) -- (#{@width}cm, #{top}cm) ;"
   p << "\\draw (0,0) -- (#{@width}cm,0);"
-  ecart = (top.to_f - bottom.to_f) / @timeline_date_lines.to_f
-  nb = 1..(@timeline_date_lines - 1)
+  ecart = (top.to_f - bottom.to_f) / (@timeline_date_lines.to_f + 1)
+  nb = 1..@timeline_date_lines
   nb.each do |i|
     h = top - i * ecart
     p << "\\draw [dashed] (0cm, #{h}cm) -- (#{@width}cm, #{h}cm) ;"
