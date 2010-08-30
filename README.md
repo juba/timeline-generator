@@ -37,7 +37,8 @@ french. The `output.pdf` file is just one big page, and
 - Download `timeline.rb`
 - Download one of the `config_francais.rb` or `config_english.rb` files
 - Edit the previous config file to your needs
-- Run the script with : 
+
+Then run the script with : 
 
     ./timeline.rb config_english.rb
 
@@ -45,7 +46,7 @@ or :
 
     ./timeline.rb config_francais.rb
 
-- If everything went well, check the two generated PDF files.
+If everything went well, check the two generated PDF files.
 
 ## KNOWN LIMITATIONS
 
