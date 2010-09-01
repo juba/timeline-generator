@@ -29,8 +29,13 @@ french. The `output.pdf` file is just one big page, and
 ## REQUIREMENTS
 
 - Ruby
-- PDFLaTeX with the *tikz*, *geometry* and *pdfpages* packages installed
-- Optionaly, the *numprint* LaTeX package for pretty printing of big numbers
+- PDFLaTeX with the *tikz*, *geometry*, *numprint* and *pdfpages* packages installed
+- Optionally, the *lmodern* LaTeX package for non ASCII characters
+
+Under Debian/Ubuntu, the following should be sufficient to meet the requirements :
+
+    $ sudo apt-get install texlive texlive-pictures lmodern texlive-latex-base texlive-latex-extra ruby
+
 
 ## INSTALLATION AND USAGE
 
