@@ -15,9 +15,14 @@
 ## First and last date in the timeline
 @timeline_date_start = 0
 @timeline_date_end = 2010
+## First date to print (for example, your timeline can begin in 1968
+## but the first date to be displayed can be 1970). Set it to nil if
+## both are the same.
+@timeline_date_first = nil
 ## Date interval for the timeline (in years)
 @timeline_date_interval = 100
 ## Interval between each timeline date "tick" (in years)
+## Tip : if you want ticks for months, just put 1.0/12 here
 @timeline_date_ticks_interval = 10
 ## Interval between each dotted vertical lines (in years)
 @timeline_date_vlines_interval = 20

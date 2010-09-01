@@ -25,6 +25,7 @@ def init(config_file)
   @overlapping  ||= 0.2
   @timeline_date_start  ||= 0
   @timeline_date_end    ||= 2010
+  @timeline_date_first  ||= @timeline_date_start
   @timeline_date_interval        ||= 100
   @timeline_date_ticks_interval  ||= 10
   @timeline_date_vlines_interval ||= 20
@@ -104,9 +105,9 @@ def generate_timeline_area
   p = ""
 
   ## Compute dates to display
-  tmp = @timeline_date_start..@timeline_date_end
+  tmp = @timeline_date_first..@timeline_date_end
   dates = []
-  tmp.step(@timeline_date_interval) { |i| dates << i}
+  tmp.step(@timeline_date_interval) { |i| dates << i }
   n = dates.length
 
   ## Lines
@@ -114,15 +115,19 @@ def generate_timeline_area
   bottom = @month_height + @day_height + @time_height
   p << "\\draw(0cm, #{top}cm) -- (#{@width}cm, #{top}cm) ;"
   p << "\\draw (0,0) -- (#{@width}cm,0);"
+  if (dates[0] != @timeline_date_start) then
+    l = coord_date(@timeline_date_start)
+    p << "\\draw(#{l}cm, #{top}cm) -- (#{l}cm, #{bottom}cm) ;"
+  end
+  if (dates[n] != @timeline_date_end) then
+    l = coord_date(@timeline_date_end)
+    p << "\\draw(#{l}cm, #{top}cm) -- (#{l}cm, #{bottom}cm) ;"
+  end
   ecart = (top.to_f - bottom.to_f) / (@timeline_date_lines.to_f + 1)
   nb = 1..@timeline_date_lines
   nb.each do |i|
     h = top - i * ecart
     p << "\\draw [dashed] (0cm, #{h}cm) -- (#{@width}cm, #{h}cm) ;"
-  end
-  if (dates[n] != @timeline_date_end) then
-    l = coord_date(@timeline_date_end)
-    p << "\\draw(#{l}cm, #{top}cm) -- (#{l}cm, #{bottom}cm) ;"
   end
 
   ## Ticks

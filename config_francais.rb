@@ -17,10 +17,15 @@
 ## Date de début et de fin de la chronologie
 @timeline_date_start = 0
 @timeline_date_end = 2010
+## Première date à afficher (par exemple, la chronologie peut
+## commencer en 1968 mais la première date à afficher être
+## 1970). Laisser à nil si les deux dates sont les mêmes
+@timeline_date_first = nil
 ## Intervalle entre chaque date de la chronologie (en années)
 @timeline_date_interval = 100
 ## Intervalle entre les repères sur l'axe des dates de la chronologie
-## (en années)
+## (en années). Astuce : si vous voulez des repères pour les mois,
+## mettre 1.0/12
 @timeline_date_ticks_interval = 10
 ## Intervalle entre chaque ligne verticale pointillée (en années)
 @timeline_date_vlines_interval = 20
